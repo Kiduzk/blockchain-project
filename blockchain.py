@@ -1,3 +1,4 @@
+MINIG_REWARD = 10
 gen_block = {"hash": "", "index": 0, "transactions": []}
 blockchain = [gen_block]
 outstanding_transactions = []
@@ -13,14 +14,26 @@ def get_last_blockchain_value():
  
 def add_transaction(recepient, sender=owner, amount=1.0):
     transaction = {"sender": sender, "recepient": recepient, "amount": amount}
-    outstanding_transactions.append(transaction)
-    participants.add(sender)
-    participants.add(recepient)
+ 
+    if verify_transaction(transaction):
+        outstanding_transactions.append(transaction)
+        participants.add(sender)
+        participants.add(recepient)
+        return True
+ 
+    return False
  
  
 def mine_block():
     global outstanding_transactions
     last_block = get_last_blockchain_value()
+ 
+    mining_reward_transaction = {
+        "sender": None,
+        "recepient": owner,
+        "amount": MINIG_REWARD,
+    }
+    outstanding_transactions.append(mining_reward_transaction)
  
     new_block = {
         "hash": hash_block(last_block),
@@ -34,6 +47,11 @@ def mine_block():
  
 def hash_block(block):
     return "-".join([str(block[key]) for key in block])
+ 
+ 
+def verify_transaction(transaction):
+    sender_balance = get_balance(transaction["sender"])
+    return sender_balance >= transaction["amount"]
  
  
 def verify_blockchain():
@@ -56,6 +74,10 @@ def get_balance(participant):
             elif transaction["recepient"] == participant:
                 amount_received += transaction["amount"]
  
+    for transaction in outstanding_transactions:
+        if transaction["sender"] == participant:
+            amount_sent += transaction["amount"]
+ 
     return float(amount_received - amount_sent)
  
  
@@ -75,18 +97,27 @@ def print_blockchain_elements():
         print(block)
  
  
+def print_participant_balance():
+    for participant in participants:
+        print(participant, get_balance(participant))
+ 
+ 
 while True:
     print("Hello, please choose: ")
     print("1: Add a new transaction")
     print("2: Mine a new block")
     print("3: Output the blockchain blocks")
+    print("4: Output the participant balance")
     print("q: Quit")
     user_choice = get_user_choice()
  
     if user_choice == "1":
         tx_details = get_transaction_details()
         recepient, amount = tx_details
-        add_transaction(recepient, amount=amount)
+        if add_transaction(recepient, amount=amount):
+            print("Transaction successful!")
+        else:
+            print("Invalid transaction. Insufficient funds")
     elif user_choice == "2":
         mine_block()
         if not verify_blockchain():
@@ -94,6 +125,8 @@ while True:
             break
     elif user_choice == "3":
         print_blockchain_elements()
+    elif user_choice == "4":
+        print_participant_balance()
     elif user_choice == "q":
         break
  
