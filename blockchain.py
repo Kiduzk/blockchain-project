@@ -4,7 +4,7 @@ import json
 
 MINIG_REWARD = 10
 number_of_zeros = 2
-gen_block = {"nonce": 0, "hash": "", "index": 0, "transactions": []}
+gen_block = {"nonce": 0, "previous_hash": "", "index": 0, "transactions": []}
 blockchain = [gen_block]
 outstanding_transactions = []
 owner = "Kaleb"
@@ -48,7 +48,7 @@ def mine_block():
     outstanding_transactions.append(mining_reward_transaction)
 
     new_block = {
-        "hash": hash_block(last_block),
+        "previous_hash": hash_block(last_block),
         "index": int(last_block["index"]) + 1,
         "transactions": outstanding_transactions,
         "nonce": proof_of_work
@@ -70,9 +70,9 @@ def verify_blockchain():
     for (index, block) in enumerate(blockchain):
         if index == 0:
             continue
-        if block["hash"] != hash_block(blockchain[index - 1]):
+        if block["previous_hash"] != hash_block(blockchain[index - 1]):
             return False
-        if not validate_proof_of_work(block["hash"], block["transactions"][:-1], block["nonce"]):
+        if not validate_proof_of_work(block["previous_hash"], block["transactions"][:-1], block["nonce"]):
             return False 
     return True
  
