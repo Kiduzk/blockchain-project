@@ -1,5 +1,10 @@
+from hashlib import sha256
+from collections import OrderedDict 
+import json
+
 MINIG_REWARD = 10
-gen_block = {"hash": "", "index": 0, "transactions": []}
+number_of_zeros = 2
+gen_block = {"nonce": 0, "hash": "", "index": 0, "transactions": []}
 blockchain = [gen_block]
 outstanding_transactions = []
 owner = "Kaleb"
@@ -13,7 +18,7 @@ def get_last_blockchain_value():
  
  
 def add_transaction(recepient, sender=owner, amount=1.0):
-    transaction = {"sender": sender, "recepient": recepient, "amount": amount}
+    transaction = OrderedDict([("sender", sender), ("recepient", recepient), ("amount", amount)])
  
     if verify_transaction(transaction):
         outstanding_transactions.append(transaction)
@@ -23,30 +28,37 @@ def add_transaction(recepient, sender=owner, amount=1.0):
  
     return False
  
- 
+def validate_proof_of_work(prev_hash, outstanding_transactions, proof_of_work):
+    return sha256((str(prev_hash) + str(outstanding_transactions) + str(proof_of_work)).encode()).hexdigest().startswith("0" * number_of_zeros)
+
+def get_proof_of_work():
+    proof_of_work = 0
+    while not validate_proof_of_work(hash_block(get_last_blockchain_value()), outstanding_transactions, proof_of_work):
+        proof_of_work += 1
+
+    return proof_of_work
+
 def mine_block():
     global outstanding_transactions
+
+    proof_of_work = get_proof_of_work()
     last_block = get_last_blockchain_value()
- 
-    mining_reward_transaction = {
-        "sender": None,
-        "recepient": owner,
-        "amount": MINIG_REWARD,
-    }
+
+    mining_reward_transaction = OrderedDict([("sender", None), ("recepient", owner), ("amount", MINIG_REWARD)])
     outstanding_transactions.append(mining_reward_transaction)
- 
+
     new_block = {
         "hash": hash_block(last_block),
         "index": int(last_block["index"]) + 1,
         "transactions": outstanding_transactions,
+        "nonce": proof_of_work
     }
- 
     outstanding_transactions = []
     blockchain.append(new_block)
  
  
 def hash_block(block):
-    return "-".join([str(block[key]) for key in block])
+    return sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
  
  
 def verify_transaction(transaction):
@@ -60,6 +72,8 @@ def verify_blockchain():
             continue
         if block["hash"] != hash_block(blockchain[index - 1]):
             return False
+        if not validate_proof_of_work(block["hash"], block["transactions"][:-1], block["nonce"]):
+            return False 
     return True
  
  
@@ -120,6 +134,7 @@ while True:
             print("Invalid transaction. Insufficient funds")
     elif user_choice == "2":
         mine_block()
+
         if not verify_blockchain():
             print("Invalid blockchain!")
             break
