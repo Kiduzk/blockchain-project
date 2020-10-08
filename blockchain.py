@@ -15,7 +15,7 @@ def read_file(file_name):
         with open(file_name, "rb") as f:
             read = pickle.load(f)
         return read
-    except:
+    except EOFError:
         return False
 
 def write_to_file(file_name, data):
@@ -25,7 +25,6 @@ def write_to_file(file_name, data):
 
 def load_blockchain():
     if not read_file("blockchain"):
-        print("wrote to")
         write_to_file("blockchain", [gen_block])
         return [gen_block]
     else:
