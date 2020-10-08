@@ -1,16 +1,40 @@
 from hashlib import sha256
 from collections import OrderedDict 
 import json
+import pickle
 
 MINIG_REWARD = 10
 number_of_zeros = 2
 gen_block = {"nonce": 0, "previous_hash": "", "index": 0, "transactions": []}
-blockchain = [gen_block]
 outstanding_transactions = []
 owner = "Kaleb"
 participants = {owner}
- 
- 
+
+def read_file(file_name):
+    try:
+        with open(file_name, "rb") as f:
+            read = pickle.load(f)
+        return read
+    except:
+        return False
+
+def write_to_file(file_name, data):
+    with open(file_name, "wb") as f:
+        pickle.dump(data, f)
+    return True  
+
+def load_blockchain():
+    if not read_file("blockchain"):
+        print("wrote to")
+        write_to_file("blockchain", [gen_block])
+        return [gen_block]
+    else:
+        return read_file("blockchain")
+
+# loading blockchain
+blockchain = load_blockchain()
+print("Blockchain loaded", blockchain)
+
 def get_last_blockchain_value():
     if len(blockchain) < 1:
         return None
@@ -55,6 +79,7 @@ def mine_block():
     }
     outstanding_transactions = []
     blockchain.append(new_block)
+    write_to_file("blockchain", blockchain)
  
  
 def hash_block(block):
