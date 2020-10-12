@@ -1,45 +1,15 @@
-from hashlib import sha256
 from collections import OrderedDict 
+from utility import *
 import json
-import pickle
 
 MINIG_REWARD = 10
 number_of_zeros = 2
 gen_block = {"nonce": 0, "previous_hash": "", "index": 0, "transactions": []}
-outstanding_transactions = []
+blockchain = load_blockchain(gen_block)
+outstanding_transactions = load_transactions()
 owner = "Kaleb"
-participants = {owner}
+participants = load_participants(owner)
 
-def read_file(file_name):
-    try:
-        with open(file_name, "rb") as f:
-            read = pickle.load(f)
-        return read
-    except EOFError:
-        return False
-
-def write_to_file(file_name, data):
-    with open(file_name, "wb") as f:
-        pickle.dump(data, f)
-    return True  
-
-def load_blockchain():
-    if not read_file("blockchain"):
-        write_to_file("blockchain", [gen_block])
-        return [gen_block]
-    else:
-        return read_file("blockchain")
-
-# loading blockchain
-blockchain = load_blockchain()
-print("Blockchain loaded", blockchain)
-
-def get_last_blockchain_value():
-    if len(blockchain) < 1:
-        return None
-    return blockchain[-1]
- 
- 
 def add_transaction(recepient, sender=owner, amount=1.0):
     transaction = OrderedDict([("sender", sender), ("recepient", recepient), ("amount", amount)])
  
@@ -47,16 +17,14 @@ def add_transaction(recepient, sender=owner, amount=1.0):
         outstanding_transactions.append(transaction)
         participants.add(sender)
         participants.add(recepient)
+        write_to_file("participants", participants)
         return True
  
     return False
  
-def validate_proof_of_work(prev_hash, outstanding_transactions, proof_of_work):
-    return sha256((str(prev_hash) + str(outstanding_transactions) + str(proof_of_work)).encode()).hexdigest().startswith("0" * number_of_zeros)
-
 def get_proof_of_work():
     proof_of_work = 0
-    while not validate_proof_of_work(hash_block(get_last_blockchain_value()), outstanding_transactions, proof_of_work):
+    while not validate_proof_of_work(hash_block(get_last_blockchain_value(blockchain)), outstanding_transactions, proof_of_work):
         proof_of_work += 1
 
     return proof_of_work
@@ -65,7 +33,7 @@ def mine_block():
     global outstanding_transactions
 
     proof_of_work = get_proof_of_work()
-    last_block = get_last_blockchain_value()
+    last_block = get_last_blockchain_value(blockchain)
 
     mining_reward_transaction = OrderedDict([("sender", None), ("recepient", owner), ("amount", MINIG_REWARD)])
     outstanding_transactions.append(mining_reward_transaction)
@@ -80,15 +48,9 @@ def mine_block():
     blockchain.append(new_block)
     write_to_file("blockchain", blockchain)
  
- 
-def hash_block(block):
-    return sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
- 
- 
 def verify_transaction(transaction):
     sender_balance = get_balance(transaction["sender"])
     return sender_balance >= transaction["amount"]
- 
  
 def verify_blockchain():
     for (index, block) in enumerate(blockchain):
@@ -99,8 +61,7 @@ def verify_blockchain():
         if not validate_proof_of_work(block["previous_hash"], block["transactions"][:-1], block["nonce"]):
             return False 
     return True
- 
- 
+
 def get_balance(participant):
     amount_sent = 0.0
     amount_received = 0.0
@@ -117,29 +78,7 @@ def get_balance(participant):
             amount_sent += transaction["amount"]
  
     return float(amount_received - amount_sent)
- 
- 
-def get_transaction_details():
-    recepient = input("Please enter recepient: ")
-    amount = float(input("Enter transaction amount: "))
-    return recepient, amount
- 
- 
-def get_user_choice():
-    return input("Your choice: ")
- 
- 
-def print_blockchain_elements():
-    for block in blockchain:
-        print("Outputting Block")
-        print(block)
- 
- 
-def print_participant_balance():
-    for participant in participants:
-        print(participant, get_balance(participant))
- 
- 
+
 while True:
     print("Hello, please choose: ")
     print("1: Add a new transaction")
@@ -163,11 +102,11 @@ while True:
             print("Invalid blockchain!")
             break
     elif user_choice == "3":
-        print_blockchain_elements()
+        print_blockchain_elements(blockchain)
     elif user_choice == "4":
-        print_participant_balance()
+        print_participant_balance(participants)
     elif user_choice == "q":
+        write_to_file("transactions", outstanding_transactions)
         break
- 
  
 print(blockchain)
