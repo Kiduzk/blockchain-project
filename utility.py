@@ -36,7 +36,7 @@ def load_transactions():
     else:
         return read_file("transactions")
 
-def validate_proof_of_work(prev_hash, outstanding_transactions, proof_of_work):
+def validate_proof_of_work(prev_hash, outstanding_transactions, proof_of_work, number_of_zeros):
     return sha256((str(prev_hash) + str(outstanding_transactions) + str(proof_of_work)).encode()).hexdigest().startswith("0" * number_of_zeros)
  
 def hash_block(block):
@@ -60,7 +60,3 @@ def get_transaction_details():
     amount = float(input("Enter transaction amount: "))
     return recepient, amount
 
-def print_participant_balance(participants):
-    for participant in participants:
-        print(participant, get_balance(participant))
-  
