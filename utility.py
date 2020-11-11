@@ -6,3 +6,6 @@ def validate_proof_of_work(prev_hash, outstanding_transactions, proof_of_work, n
  
 def hash_block(block):
     return sha256(pickle.dumps(block)).hexdigest()
+
+def encode_object(obj):
+    return pickle.dumps(obj)

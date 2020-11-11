@@ -1,5 +1,3 @@
-
-
 class Block:
     def __init__(self, previous_hash, index, transactions, nonce):
         self.previous_hash = previous_hash

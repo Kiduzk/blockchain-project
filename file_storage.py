@@ -1,4 +1,5 @@
 import pickle
+import uuid
 
 class FileHandler:
     def read_file(self, file_name):
@@ -14,19 +15,12 @@ class FileHandler:
             pickle.dump(data, f)
         return True  
 
-    def load_blockchain(self, gen_block):
+    def load_blockchain_list(self, gen_block):
         if not self.read_file("blockchain"):
             self.write_to_file("blockchain", [gen_block])
-            return [gen_block]
+            return ([gen_block])
         else:
             return self.read_file("blockchain")
-
-    def load_participants(self, owner):
-        if not self.read_file("participants"):
-            self.write_to_file("participants", {owner})
-            return {owner}
-        else:
-            return self.read_file("participants")
 
     def load_transactions(self):
         if not self.read_file("transactions"):
@@ -34,3 +28,10 @@ class FileHandler:
             return []
         else:
             return self.read_file("transactions")
+
+    def load_id(self, id):
+        if not self.read_file("id"):
+            self.write_to_file("id", str(id))
+            return str(id)
+        else:
+            return self.read_file("id")
