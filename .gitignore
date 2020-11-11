@@ -3,5 +3,6 @@
 /transactions
 /wallet
 /id
-__pychache__/
+/__pychache__/
 /.git
+/.vscode
