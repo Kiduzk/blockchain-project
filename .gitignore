@@ -1,8 +1,10 @@
+__pycache__/
+*.py[cod]
+
 /blockchain
 /participants
 /transactions
 /wallet
 /id
-/__pychache__/
 /.git
 /.vscode
