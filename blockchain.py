@@ -1,3 +1,5 @@
+from block import Block
+
 class Blockchain:
     def __init__(self, blocks, transactions, id):
         self._blockchain = blocks
@@ -7,9 +9,30 @@ class Blockchain:
     def get_blocks(self):
         return self._blockchain
     
+    def get_readable_blocks(self):
+        blocks = self.get_blocks()
+        changed_blocks = []
+        for i in blocks:
+            clone_block = Block(i.previous_hash, i.index, self.get_readable_transactions(i.transactions), i.nonce)    
+            changed_blocks.append(vars(clone_block))
+        
+        return changed_blocks
+
     def get_transactions(self):
         return self._transactions
     
+    def get_readable_transactions(self, optional_transactoin_pool=None):
+        if not optional_transactoin_pool:
+            transactions = self.get_transactions_only()
+        else:
+            transactions = optional_transactoin_pool
+
+        changed_transactions = []
+        for i in transactions:
+            changed_transactions.append(str(i))
+        
+        return changed_transactions
+
     def get_transactions_only(self):
         ret = []
         for i in self._transactions:

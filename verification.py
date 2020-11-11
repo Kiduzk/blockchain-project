@@ -16,7 +16,8 @@ class Verification:
 
         return float(amount_received - amount_sent)
 
-    def verify_transaction(self, transaction, blockchain, outstanding_transactions, signature):
+    def verify_transaction(self, transaction, blockchain_obj, signature):
+        blockchain, outstanding_transactions = blockchain_obj.get_blocks(), blockchain_obj.get_transactions_only()
         public_key = transaction.sender
         if transaction.sender:
             sender_balance = self.get_balance(transaction.sender, blockchain, outstanding_transactions)

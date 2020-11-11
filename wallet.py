@@ -2,6 +2,7 @@ import rsa
 from file_storage import FileHandler
 from utility import encode_object
 from hashlib import sha256, sha512
+from verification import Verification
 
 class Wallet:
     def __init__(self):
@@ -21,3 +22,6 @@ class Wallet:
         sign = pow(hashed, self._private.d, self._public.n)
         return sign
     
+    def get_my_balance(self, blockchain):
+        blockchain, outstanding_transactions = blockchain.get_blocks(), blockchain.get_transactions_only()
+        return Verification().get_balance(self.get_public_key(), blockchain, outstanding_transactions)

@@ -28,10 +28,3 @@ class FileHandler:
             return []
         else:
             return self.read_file("transactions")
-
-    def load_id(self, id):
-        if not self.read_file("id"):
-            self.write_to_file("id", str(id))
-            return str(id)
-        else:
-            return self.read_file("id")
